@@ -1,0 +1,16 @@
+name: qa-probe
+run-name: QA lane reviewer readiness probe
+# QA lane qa-lane-20261026 (26 Oct 2026): a run that waits at the protected environment qa-probe
+# (required reviewer: the lane's technical reviewer) proves the connection's gate profile.
+# Never approved; cancelled by the lane builder after the connection is ready.
+on:
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  probe:
+    environment: qa-probe
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - run: echo "QA lane readiness probe; nothing is deployed."

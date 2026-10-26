@@ -1,0 +1,45 @@
+name: qa-adopt-observe
+run-name: ${{ inputs.helio_execution_id || format('QA lane GitHub-started run {0}', github.sha) }}
+# QA lane qa-lane-20261026 (26 Oct 2026): the GitHub-started ("adopted") workflow for the Observe-only policy
+# (TC-298). QA pushes a file under qa-adopt/ on main; GitHub starts the run; Helio adopts it under the pipeline's
+# "GitHub-started runs" policy. Its test job uses the unprotected environment qa-adopt-test, so the run completes by
+# itself. Pushes on feature/** branches and pull requests give the policy its refusal candidates. Nothing is deployed.
+on:
+  push:
+    branches: [main, 'feature/**']
+    paths: ['.github/workflows/qa-adopt-observe.yml', 'qa-adopt/**']
+  pull_request:
+    paths: ['qa-adopt/**']
+  workflow_dispatch:
+    inputs:
+      environment: { type: string, required: false, default: '' }
+      helio_execution_id: { type: string, required: false, default: '' }
+      helio_release_id: { type: string, required: false, default: '' }
+      workflow_revision: { type: string, required: false, default: '' }
+      release_version: { type: string, required: false, default: '' }
+permissions:
+  contents: read
+concurrency:
+  group: qa-adopt-observe-${{ github.ref }}-${{ github.run_id }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Build (synthetic)
+        shell: bash
+        run: |
+          echo "QA lane GitHub-started build of ${GITHUB_SHA}; nothing is built."
+          sleep 120
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: qa-adopt-test
+    steps:
+      - name: Test (synthetic)
+        shell: bash
+        run: |
+          echo "QA lane GitHub-started test of ${GITHUB_SHA} in qa-adopt-test; nothing is deployed."
+          sleep 20

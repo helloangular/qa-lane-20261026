@@ -1,0 +1,22 @@
+name: qa-catalog-release
+run-name: ${{ inputs.helio_execution_id || format('QA lane release {0}', github.sha) }}
+# QA lane qa-lane-20261026 (26 Oct 2026): pure catalog caller for QA (TC-117, TC-299, TC-300). Calls the central catalog template by its full name. No real deployment.
+on:
+  workflow_dispatch:
+    inputs:
+      helio_execution_id:
+        type: string
+        required: false
+        default: ''
+      helio_target_environment:
+        type: string
+        required: false
+        default: ''
+permissions:
+  contents: read
+jobs:
+  deploy:
+    uses: helloangular/helio-client-capacity-20260916/.github/workflows/qa-lane-deploy.yml@qa-lane-20261026
+    with:
+      helio_execution_id: ${{ inputs.helio_execution_id || '' }}
+      helio_target_environment: ${{ inputs.helio_target_environment || '' }}

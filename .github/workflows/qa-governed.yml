@@ -1,0 +1,55 @@
+name: qa-governed
+run-name: ${{ inputs.helio_execution_id || format('QA lane governed release {0}', github.sha) }}
+# QA lane qa-lane-20261026 (26 Oct 2026): the as-is governed workflow. Helio dispatches it (provider-managed run,
+# "Govern existing environment promotions"); GitHub's own environment protection on qa-test and qa-prod waits for
+# Helio's reviewer (the QA reviewer connection), the only required reviewer, admin bypass off. Nothing is deployed.
+# Cases: TC-291 (gate waiting on the connection being rotated), TC-296 (reviewer connection inactive),
+# TC-297 (cancel the run in GitHub while it waits at a hold), TC-283 (closed Helio-dispatched run, re-run follow-up).
+on:
+  workflow_dispatch:
+    inputs:
+      environment: { type: string, required: false, default: '' }
+      helio_execution_id: { type: string, required: false, default: '' }
+      helio_release_id: { type: string, required: false, default: '' }
+      workflow_revision: { type: string, required: false, default: '' }
+      release_version: { type: string, required: false, default: '' }
+permissions:
+  contents: read
+  deployments: write
+concurrency:
+  group: qa-governed-${{ inputs.helio_execution_id || github.run_id }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Build (synthetic)
+        shell: bash
+        run: |
+          echo "QA lane synthetic build of ${GITHUB_SHA} (${{ inputs.release_version }}); nothing is built."
+          sleep 15
+  qa-test:
+    name: deploy qa-test
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: qa-test
+    steps:
+      - name: Deploy to qa-test (synthetic)
+        shell: bash
+        run: |
+          echo "QA lane synthetic deployment of ${GITHUB_SHA} to qa-test; no application is deployed."
+          sleep 15
+  qa-prod:
+    name: deploy qa-prod
+    needs: qa-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: qa-prod
+    steps:
+      - name: Deploy to qa-prod (synthetic)
+        shell: bash
+        run: |
+          echo "QA lane synthetic deployment of ${GITHUB_SHA} to qa-prod; no application is deployed."
+          sleep 15
